@@ -1,0 +1,10 @@
+exclude_paths:
+  - .pre-commit-config.yaml
+  - attic/
+  - butlers/attic/
+  - roles/nullmailer/meta/main.yml
+skip_list:
+  - meta-incorrect
+  - meta-no-info
+  - schema
+  - var-spacing
