@@ -2,9 +2,10 @@
 # tasks file for nfs
   # if $server_enabled {
 
-  #   if $server_nfsv4_servicehelper != undef {
-  #     $effective_nfsv4_client_services = delete($client_nfsv4_services, $server_nfsv4_servicehelper)
-  #   } else {
+    # if $server_nfsv4_servicehelper != undef {
+    # see https://stackoverflow.com/questions/40496021/how-to-remove-a-single-key-from-an-ansible-dictionary
+    #   $effective_nfsv4_client_services = delete($client_nfsv4_services, $server_nfsv4_servicehelper)
+    # } else {
   #     $effective_nfsv4_client_services = $client_nfsv4_services
   #   }
 
@@ -22,7 +23,7 @@
   #   $effective_client_packages = $client_packages
 
   # }
-- name: Include os family variables
+- name: "Include {{ ansible_os_family }} os family variables"
   ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
 
 - name: Set effective_codename
@@ -30,9 +31,13 @@
     effective_codename: focal
   when: ansible_distribution_release in ['jammy', 'focal', 'bionic', 'focal']
 
-- name: Include dist codename for debian
+- name: "Include dist codename {{ effective_codename }} for debian"
   ansible.builtin.include_vars: "{{ ansible_os_family }}/{{ effective_codename }}.yml"
   when: ansible_os_family == "Debian"
+
+- name: Show variable nfs_server_enabled
+  ansible.builtin.debug:
+    msg: "nfs_server_enabled: {{ nfs_server_enabled }}"
 
 - name: Include server tasks
   ansible.builtin.include_tasks: server.yml
