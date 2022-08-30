@@ -1,0 +1,9 @@
+---
+# vars file for Suse
+
+nfs_server_packages:
+  - 'nfs-kernel-server'
+nfs_client_packages:
+  - 'nfsidmap'
+  - 'nfs-client'
+  - 'rpcbind'

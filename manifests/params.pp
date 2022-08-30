@@ -1,4 +1,65 @@
+# == Class: nfs::params
+#
+# This class exists to
+# 1. Declutter the default value assignment for class parameters.
+# 2. Manage internally used module variables in a central place.
+#
+# Therefore, many operating system dependent differences (names, paths, ...)
+# are addressed in here.
+#
+#
+# === Parameters
+#
+# This class does not provide any parameters.
+#
+#
+# === Examples
+#
+# This class is not intended to be used directly.
+#
+#
+# === Links
+#
+# * {Puppet Docs: Using Parameterized Classes}[http://j.mp/nVpyWY]
+#
+#
+# === Authors
+#
+# * Daniel Klockenkaemper <mailto:dk@marketing-factory.de>
+#
 
+class nfs::params {
+  #### Default values for the parameters of the main module class, init.pp
+
+  $nfs_v4                     = false
+  $nfs_v4_export_root         = '/export'
+  $nfs_v4_export_root_clients = "*.${facts['networking']['domain']}(ro,fsid=root,insecure,no_subtree_check,async,root_squash)"
+  $nfs_v4_mount_root          = '/srv'
+
+  if $facts['networking']['domain'] != undef {
+    $nfs_v4_idmap_domain = $facts['networking']['domain']
+  } else {
+    $nfs_v4_idmap_domain = 'example.org'
+  }
+
+  # Different path and package definitions
+  case $facts['os']['family'] {
+    'Debian': {
+      $exports_file          = '/etc/exports'
+      $idmapd_file           = '/etc/idmapd.conf'
+      $defaults_file         = '/etc/default/nfs-common'
+      $server_packages       = [ 'nfs-common', 'nfs-kernel-server', 'nfs4-acl-tools', 'rpcbind' ]
+      $client_packages       = [ 'nfs-common', 'nfs4-acl-tools', 'rpcbind' ]
+      $client_rpcbind_config = '/etc/default/rpcbind'
+    }
+    'RedHat': {
+      $exports_file          = '/etc/exports'
+      $idmapd_file           = '/etc/idmapd.conf'
+      $defaults_file         = '/etc/sysconfig/nfs'
+      $server_packages       = [ 'nfs-utils', 'nfs4-acl-tools', 'rpcbind' ]
+      $client_packages       = [ 'nfs-utils', 'nfs4-acl-tools', 'rpcbind' ]
+      $client_rpcbind_config = '/etc/sysconfig/rpcbind'
+    }
     'Gentoo': {
       $exports_file          = '/etc/exports'
       $idmapd_file           = '/etc/idmapd.conf'
