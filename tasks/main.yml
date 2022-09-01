@@ -1,28 +1,5 @@
 ---
 # tasks file for nfs
-  # if $server_enabled {
-
-    # if $server_nfsv4_servicehelper != undef {
-    # see https://stackoverflow.com/questions/40496021/how-to-remove-a-single-key-from-an-ansible-dictionary
-    #   $effective_nfsv4_client_services = delete($client_nfsv4_services, $server_nfsv4_servicehelper)
-    # } else {
-  #     $effective_nfsv4_client_services = $client_nfsv4_services
-  #   }
-
-  #   $effective_client_services = $client_services
-  #   $effective_client_packages = difference($client_packages, $server_packages)
-
-  # } else {
-  #   if $client_gssd_service and $client_gssd_service_name != undef {
-  #     $effective_nfsv4_client_services = $client_nfsv4_services + $client_gssd_service_name
-  #   } else {
-  #     $effective_nfsv4_client_services = $client_nfsv4_services
-  #   }
-
-  #   $effective_client_services = $client_services
-  #   $effective_client_packages = $client_packages
-
-  # }
 - name: "Include {{ ansible_os_family }} os family variables"
   ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
 
@@ -35,13 +12,63 @@
   ansible.builtin.include_vars: "{{ ansible_os_family }}/{{ effective_codename }}.yml"
   when: ansible_os_family == "Debian"
 
-- name: Show variable nfs_server_enabled
-  ansible.builtin.debug:
-    msg: "nfs_server_enabled: {{ nfs_server_enabled }}"
+- name: Set effective_client_services
+  ansible.builtin.set_fact:
+    effective_client_services: "{{ nfs_client_services }}"
 
-- name: Include server tasks
-  ansible.builtin.include_tasks: server.yml
+- name: Server enabled block
+  block:
+    - name: Set effective_nfsv4_client_services fact when nfs_server_nfsv4_servicehelper
+      ansible.builtin.set_fact:
+        effective_nfsv4_client_services: "{{ nfs_client_nfsv4_services | del_by_list(nfs_server_nfsv4_servicehelper) }}"
+      when: nfs_server_nfsv4_servicehelper is defined and (nfs_server_nfsv4_servicehelper|length>0)
+
+    - name: Set effective_nfsv4_client_services fact when nfs_server_nfsv4_servicehelper
+      ansible.builtin.set_fact:
+        effective_nfsv4_client_services: "{{ nfs_client_nfsv4_services }}"
+      when: nfs_server_nfsv4_servicehelper is not defined or (nfs_server_nfsv4_servicehelper|length==0)
+
+    - name: Set effective_client_packages
+      ansible.builtin.set_fact:
+        effective_client_packages: "{{ nfs_client_packages | difference(nfs_server_packages) }}"
+
+    - name: Include server tasks
+      ansible.builtin.include_tasks: server.yml
+
   when: nfs_server_enabled
+
+- name: Server not enabled block
+  block:
+    - name: Set effective_nfsv4_client_services fact for gssd
+      ansible.builtin.set_fact:
+        effective_nfsv4_client_services: "{{ nfs_client_nfsv4_services + nfs_client_gssd_service_name }}"
+      when:
+        - nfs_client_gssd_service is defined
+        - nfs_client_gssd_service_name is defined
+
+    - name: Set effective_nfsv4_client_services fact for not gssd
+      ansible.builtin.set_fact:
+        effective_nfsv4_client_services: "{{ nfs_client_nfsv4_services }}"
+      when: nfs_client_gssd_service is not defined or nfs_client_gssd_service_name is not defined
+
+    - name: Set effective_nfsv4_client_services fact when nfs_server_nfsv4_servicehelper
+      ansible.builtin.set_fact:
+        effective_nfsv4_client_services: "{{ nfs_client_nfsv4_services }}"
+      when: nfs_server_nfsv4_servicehelper is not defined
+
+    - name: Set effective_client_packages
+      ansible.builtin.set_fact:
+        effective_client_packages: "{{ nfs_client_packages }}"
+
+  when: not nfs_server_enabled
+
+- name: Show variable effective_client_services
+  ansible.builtin.debug:
+    msg: "effective_client_services: {{ effective_client_services }}"
+
+- name: Show variable effective_nfsv4_client_services
+  ansible.builtin.debug:
+    msg: "effective_nfsv4_client_services: {{ effective_nfsv4_client_services }}"
 
 - name: Include client tasks
   ansible.builtin.include_tasks: client.yml

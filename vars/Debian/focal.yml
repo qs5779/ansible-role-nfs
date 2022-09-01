@@ -1,6 +1,6 @@
 ---
 # vars file for Debian codename jammy
 
-# 'jammy', 'focal', 'bionic', 'focal':
-nfs_server_nfsv4_servicehelper: ~
+# 'jammy', 'focal', 'bionic':
+nfs_server_nfsv4_servicehelper: []
 ...

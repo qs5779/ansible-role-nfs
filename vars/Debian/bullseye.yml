@@ -1,0 +1,13 @@
+---
+# vars file for Debian codename jammy
+
+# 'bullseye', 'buster', 'stretch', 'xenial', 'yakkety', 'zesty':
+nfs_client_services:
+  ensure: 'running'
+  enable: true
+nfs_client_nfsv4_services:
+  ensure: 'running'
+  enable: true
+nfs_server_nfsv4_servicehelper:
+  - 'nfs-idmapd'
+...

@@ -1,2 +1,25 @@
 ---
 # tasks file for nfs
+
+- name: Show variable effective_client_packages
+  ansible.builtin.debug:
+    msg: "effective_client_packages: {{ effective_client_packages }}"
+
+- name: Install nfs client packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ effective_client_packages }}"
+  when: nfs_manage_packages
+  notify:
+    - Manage Client Services
+  # if $::nfs::manage_packages {
+
+  #   if $::nfs::effective_client_packages != undef {
+  #     package { $::nfs::effective_client_packages:
+  #       ensure => $::nfs::client_package_ensure,
+  #       notify => $notify_services,
+  #     }
+  #   }
+
+  # }
