@@ -12,3 +12,6 @@
 
 - name: Manage Client Services
   ansible.builtin.import_tasks: tasks/manage_client_services.yml
+  when:
+    - not ansible_check_mode
+    - nfs_manage_server_service
