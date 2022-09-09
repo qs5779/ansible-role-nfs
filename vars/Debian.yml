@@ -3,14 +3,14 @@
 
 nfs_defaults_file: '/etc/default/nfs-common'
 nfs_server_packages:
-  - 'nfs-utils'
+  - 'nfs-common'
+  - 'nfs-kernel-server'
   - 'nfs4-acl-tools'
   - 'rpcbind'
 nfs_client_packages:
-  - 'nfs-utils'
+  - 'nfs-common'
   - 'nfs4-acl-tools'
   - 'rpcbind'
-
 
 nfs_client_services:
   rpcbind': {}

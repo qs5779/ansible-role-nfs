@@ -6,7 +6,12 @@
 - name: Set effective_codename
   ansible.builtin.set_fact:
     effective_codename: focal
-  when: ansible_distribution_release in ['jammy', 'focal', 'bionic', 'focal']
+  when: ansible_distribution_release in ['jammy', 'focal', 'bionic']
+
+- name: Set effective_codename
+  ansible.builtin.set_fact:
+    effective_codename: bullseye
+  when: ansible_distribution_release in ['bullseye', 'buster', 'stretch', 'xenial', 'yakkety', 'zesty']
 
 - name: "Include dist codename {{ effective_codename }} for debian"
   ansible.builtin.include_vars: "{{ ansible_os_family }}/{{ effective_codename }}.yml"

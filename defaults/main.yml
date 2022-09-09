@@ -11,7 +11,7 @@ nfs_idmapd_file: /etc/idmapd.conf
 
   # Enum['present', 'absent', 'running', 'stopped', 'disabled'] $ensure: 'present'
 nfs_server_enabled: false
-nfs_client_enabled: false
+nfs_client_enabled: true
   # Boolean $storeconfigs_enabled: true
   # Boolean $nfs_v4: $::nfs::params::nfs_v4
   # Boolean $nfs_v4_client: $::nfs::params::nfs_v4
@@ -25,9 +25,8 @@ nfs_manage_packages: true
   # String $client_package_ensure: 'installed'
 nfs_manage_server_service: true
   # Boolean $manage_server_servicehelper: true
-  # Boolean $manage_client_service: true
   # String $server_service_name: $::nfs::params::server_service_name
-nfs_server_service_ensure: started
+# nfs_server_service_ensure: started
 nfs_server_service_enable: true
   # Boolean $server_service_hasrestart: $::nfs::params::server_service_hasrestart
   # Boolean $server_service_hasstatus: $::nfs::params::server_service_hasstatus

@@ -13,13 +13,14 @@
   when: nfs_manage_packages
   notify:
     - Manage Client Services
-  # if $::nfs::manage_packages {
 
-  #   if $::nfs::effective_client_packages != undef {
-  #     package { $::nfs::effective_client_packages:
-  #       ensure => $::nfs::client_package_ensure,
-  #       notify => $notify_services,
-  #     }
-  #   }
-
-  # }
+# - name: xxx
+#   block:
+#     - name: Set client gssd options
+#       when: nfs_client_gssd_options != ""
+#       # if $::nfs::client_gssd_options != '' {
+#       #   $_gssd1_aug = ["set ${::nfs::client_gssdopt_name} \"'${::nfs::client_gssd_options}'\""]
+#       # } else {
+#       #   $_gssd1_aug = undef
+#       # }
+#   when: nfs_defaults_file is defined

@@ -4,14 +4,11 @@
 - name: Manage Server Service
   ansible.builtin.service:
     name: "{{ nfs_server_service_name }}"
-    state: "{{ nfs_server_service_ensure }}"
+    state: restarted
     enable: "{{ nfs_server_service_enable }}"
   when:
     - not ansible_check_mode
     - nfs_manage_server_service
 
 - name: Manage Client Services
-  ansible.builtin.import_tasks: tasks/manage_client_services.yml
-  when:
-    - not ansible_check_mode
-    - nfs_manage_server_service
+  ansible.builtin.include_tasks: tasks/manage_client_services.yml

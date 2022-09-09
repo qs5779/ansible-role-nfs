@@ -1,14 +1,33 @@
 ---
-# handlers file for nfs
+# client_services_tasks
+- name: Show nfs_v4 client services
+  ansible.builtin.debug:
+    msg: "client_services: {{ effective_nfsv4_client_services }}"
+  when: nfs_v4
 
-- name: Manage Server Service
-  ansible.builtin.service:
-    name: "{{ nfs_server_service_name }}"
-    state: "{{ nfs_server_service_ensure }}"
-    enable: "{{ nfs_server_service_enable }}"
+- name: Show nfs client services
+  ansible.builtin.debug:
+    msg: "client_services: {{ effective_client_services }}"
+  when: not nfs_v4
+  
+  # see https://stackoverflow.com/questions/42167747/how-to-loop-over-this-dictionary-in-ansible
+- name: Client Services Handler block
+  block:
+  - name: Restart nfs_v4 client services
+    ansible.builtin.service:
+      name: "{{ item }}"
+      state: restarted
+      enable: "{{ nfs_client_services_enable }}"
+    loop: "{{ effective_nfsv4_client_services }}"
+    when: nfs_v4
+
+  - name: Restart nfs client services
+    ansible.builtin.service:
+      name: "{{ item }}"
+      state: restarted
+      enable: "{{ nfs_client_services_enable }}"
+    loop: "{{ effective_client_services }}"
+    when: not nfs_v4
   when:
     - not ansible_check_mode
-    - nfs_manage_server_service
-
-- name: Manage Client Services
-  ansible.builtin.import_tasks: tasks/manage_client_services.yml
+    - nfs_manage_client_service

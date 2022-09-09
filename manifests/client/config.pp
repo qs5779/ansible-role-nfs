@@ -51,7 +51,6 @@ class nfs::client::config {
       file_line{ 'rpc-gssd.service':
         path    => '/lib/systemd/system/rpc-gssd.service',
         match   => 'EnvironmentFile',
-        line    => 'EnvironmentFile=-/etc/default/nfs-common',
         require => Package['nfs-common'],
       } ~> exec { 'systemctl daemon-reload':
         refreshonly => true,
