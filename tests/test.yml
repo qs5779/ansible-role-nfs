@@ -1,5 +1,7 @@
 ---
-- hosts: localhost
+- name: Test nfs role playbook
+  hosts: localhost
   remote_user: root
   roles:
-    - nfs
+    - qs5779.nfs
+...

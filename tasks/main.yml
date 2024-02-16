@@ -1,81 +1,54 @@
 ---
-# tasks file for nfs
-- name: "Include {{ ansible_os_family }} os family variables"
-  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+# tasks file for ansible-role-nfs
+# ref: https://www.howtoforge.com/tutorial/install-nfs-server-and-client-on-debian/
+- name: Install nfs client
+  ansible.builtin.package:
+    name: nfs-common
+  when: is_nfs_client
 
-- name: Set effective_codename
-  ansible.builtin.set_fact:
-    effective_codename: focal
-  when: ansible_distribution_release in ['jammy', 'focal', 'bionic']
-
-- name: Set effective_codename
-  ansible.builtin.set_fact:
-    effective_codename: bullseye
-  when: ansible_distribution_release in ['bullseye', 'buster', 'stretch', 'xenial', 'yakkety', 'zesty']
-
-- name: "Include dist codename {{ effective_codename }} for debian"
-  ansible.builtin.include_vars: "{{ ansible_os_family }}/{{ effective_codename }}.yml"
-  when: ansible_os_family == "Debian"
-
-- name: Set effective_client_services
-  ansible.builtin.set_fact:
-    effective_client_services: "{{ nfs_client_services }}"
-
-- name: Server enabled block
+- name: Install nfs server
+  when: is_nfs_server
   block:
-    - name: Set effective_nfsv4_client_services fact when nfs_server_nfsv4_servicehelper
-      ansible.builtin.set_fact:
-        effective_nfsv4_client_services: "{{ nfs_client_nfsv4_services | del_by_list(nfs_server_nfsv4_servicehelper) }}"
-      when: nfs_server_nfsv4_servicehelper is defined and (nfs_server_nfsv4_servicehelper|length>0)
+    - name: Install nfs server kernel
+      ansible.builtin.package:
+        name: nfs-kernel-server
 
-    - name: Set effective_nfsv4_client_services fact when nfs_server_nfsv4_servicehelper
-      ansible.builtin.set_fact:
-        effective_nfsv4_client_services: "{{ nfs_client_nfsv4_services }}"
-      when: nfs_server_nfsv4_servicehelper is not defined or (nfs_server_nfsv4_servicehelper|length==0)
-
-    - name: Set effective_client_packages
-      ansible.builtin.set_fact:
-        effective_client_packages: "{{ nfs_client_packages | difference(nfs_server_packages) }}"
-
-    - name: Include server tasks
-      ansible.builtin.include_tasks: server.yml
-
-  when: nfs_server_enabled
-
-- name: Server not enabled block
-  block:
-    - name: Set effective_nfsv4_client_services fact for gssd
-      ansible.builtin.set_fact:
-        effective_nfsv4_client_services: "{{ nfs_client_nfsv4_services + nfs_client_gssd_service_name }}"
+    - name: Enable service nfs-server, and not touch the state
+      ansible.builtin.service:
+        name: nfs-server
+        enabled: true
       when:
-        - nfs_client_gssd_service is defined
-        - nfs_client_gssd_service_name is defined
+        - not ansible_check_mode
 
-    - name: Set effective_nfsv4_client_services fact for not gssd
-      ansible.builtin.set_fact:
-        effective_nfsv4_client_services: "{{ nfs_client_nfsv4_services }}"
-      when: nfs_client_gssd_service is not defined or nfs_client_gssd_service_name is not defined
+    - name: Set need statd
+      ansible.builtin.lineinfile:
+        path: /etc/default/nfs-common
+        regexp: '^NEED_STATD'
+        line: 'NEED_STATD="no"'
+      when: is_nfsv4_only
+      notify: Restart nfs-server
 
-    - name: Set effective_nfsv4_client_services fact when nfs_server_nfsv4_servicehelper
-      ansible.builtin.set_fact:
-        effective_nfsv4_client_services: "{{ nfs_client_nfsv4_services }}"
-      when: nfs_server_nfsv4_servicehelper is not defined
+    - name: Set need idmapd
+      ansible.builtin.lineinfile:
+        path: /etc/default/nfs-common
+        regexp: '^NEED_IDMAPD'
+        line: 'NEED_IDMAPD="yes"'
+      when: is_nfsv4_only
+      notify: Restart nfs-server
 
-    - name: Set effective_client_packages
-      ansible.builtin.set_fact:
-        effective_client_packages: "{{ nfs_client_packages }}"
+    - name: Set nfsv4 server default
+      ansible.builtin.lineinfile:
+        path: /etc/default/nfs-kernel-server
+        regexp: 'RPCNFSDOPTS'
+        line: 'RPCNFSDOPTS="-N 2 -N 3"'
+      when: is_nfsv4_only
+      notify: Restart nfs-server
 
-  when: not nfs_server_enabled
-
-- name: Show variable effective_client_services
-  ansible.builtin.debug:
-    msg: "effective_client_services: {{ effective_client_services }}"
-
-- name: Show variable effective_nfsv4_client_services
-  ansible.builtin.debug:
-    msg: "effective_nfsv4_client_services: {{ effective_nfsv4_client_services }}"
-
-- name: Include client tasks
-  ansible.builtin.include_tasks: client.yml
-  when: nfs_client_enabled
+    - name: Set nfsv4 default
+      ansible.builtin.lineinfile:
+        path: /etc/default/nfs-kernel-server
+        regexp: '^RPCMOUNTDOPTS'
+        line: 'RPCMOUNTDOPTS="--manage-gids -N 2 -N 3"'
+      when: is_nfsv4_only
+      notify: Restart nfs-server
 ...

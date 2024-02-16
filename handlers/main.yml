@@ -1,14 +1,8 @@
 ---
-# handlers file for nfs
-
-- name: Manage Server Service
+# handlers file for ansible-role-nfs
+- name: Restart nfs-server
   ansible.builtin.service:
-    name: "{{ nfs_server_service_name }}"
+    name: nfs-server
     state: restarted
-    enable: "{{ nfs_server_service_enable }}"
   when:
     - not ansible_check_mode
-    - nfs_manage_server_service
-
-- name: Manage Client Services
-  ansible.builtin.include_tasks: tasks/manage_client_services.yml
