@@ -6,3 +6,11 @@
     state: restarted
   when:
     - not ansible_check_mode
+
+- name: Reload exports
+  ansible.builtin.command:
+    cmd: exportfs -a
+  register: exportfs_output
+  changed_when: exportfs_output.rc == 0
+  when:
+    - not ansible_check_mode

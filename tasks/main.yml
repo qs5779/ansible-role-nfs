@@ -9,6 +9,13 @@
 - name: Install nfs server
   when: is_nfs_server
   block:
+    - name: Assert | Test nfs_access_list
+      ansible.builtin.assert:
+        that:
+          - nfs_access_list is defined
+          - nfs_access_list is list
+        quiet: true
+
     - name: Install nfs server kernel
       ansible.builtin.package:
         name: nfs-kernel-server

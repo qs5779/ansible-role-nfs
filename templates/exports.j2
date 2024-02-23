@@ -1,0 +1,2 @@
+{{ ansible_managed | comment }}
+{{ nfs_export_root }} -{{ nfs_export_opts|join(',') }} {{ nfs_access_list|join(' ') }}
