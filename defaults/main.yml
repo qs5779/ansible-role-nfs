@@ -1,2 +1,15 @@
 ---
-# defaults file for nfs
+# defaults file for ansible-role-nfs
+is_nfs_client: true
+is_nfs_server: true
+is_nfsv4_only: true
+nfs_export_root: /exports
+nfs_exports:
+  - data
+  - documents
+nfs_export_opts:
+  - rw
+  - no_root_squash
+  - no_subtree_check
+  - crossmnt
+  - fsid=0

@@ -1,0 +1,5 @@
+---
+exclude_paths:
+  - attic/
+...
+# vim: ft=yaml
