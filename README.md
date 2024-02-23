@@ -77,7 +77,7 @@ To install the role from github, create a reqirements.yml file with the followin
 # from GitHub
 - name: qs5779.nfs
   src: https://github.com/qs5779/ansible-role-nfs
-  version: develop
+  version: main
 ...
 ```
 
