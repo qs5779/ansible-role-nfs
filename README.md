@@ -1,38 +1,69 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+Role to install nfs client and/or nfs server.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+None
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+Default variables
+
+```yaml
+nfs_export_root: /exports
+nfs_exports:
+  - data
+  - documents
+nfs_export_opts:
+  - rw
+  - no_root_squash
+  - no_subtree_check
+  - crossmnt
+  - fsid=0
+```
+
+Example of required user supplied variables
+
+```yaml
+nfs_access_list:
+  - 192.168.1.0/24
+  - 2607:f8b0:4008:804::/64
+```
+The above variables result in the following /etc/exports file.
+
+```sh
+#
+# Ansible managed
+#
+/exports -rw,no_root_squash,no_subtree_check,crossmnt,fsid=0 192.168.1.0/24 2607:f8b0:4008:804::/64
+```
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+  - hosts: servers
+    vars:
+      nfs_access_list:
+        - 192.168.1.0/24
+        - 2607:f8b0:4008:804::/64
+    roles:
+        - { role: qs5779.nfs }
 
 License
 -------
 
-BSD
+MIT
 
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Quien Sabe https://www.quiensabe.org
