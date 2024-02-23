@@ -13,7 +13,9 @@
       ansible.builtin.assert:
         that:
           - nfs_access_list is defined
-          - nfs_access_list is list
+          - nfs_access_list is not mapping
+          - nfs_access_list is iterable
+          - nfs_access_list is not string
         quiet: true
 
     - name: Install nfs server kernel
@@ -58,4 +60,22 @@
         line: 'RPCMOUNTDOPTS="--manage-gids -N 2 -N 3"'
       when: is_nfsv4_only
       notify: Restart nfs-server
+
+    - name: Ensure export directories
+      ansible.builtin.file:
+        state: directory
+        path: "{{ nfs_export_root }}/{{ item }}"
+        owner: nobody
+        group: nogroup
+        mode: "0755"
+      loop: "{{ nfs_exports }}"
+
+    - name: Ensure export config file
+      ansible.builtin.template:
+        src: templates/exports.j2
+        dest: /etc/exports
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload exports
 ...

@@ -50,18 +50,42 @@ None
 Example Playbook
 ----------------
 
+```yaml
   - hosts: servers
     vars:
       nfs_access_list:
         - 192.168.1.0/24
         - 2607:f8b0:4008:804::/64
     roles:
-        - { role: qs5779.nfs }
+        - qs5779.nfs
+```
 
 License
 -------
 
 MIT
+
+Installation
+------------
+
+I will not upload this role to ansible galaxy until I develop automated tests.
+To install the role from github, create a reqirements.yml file with the following contents:
+
+```yaml
+---
+# for examples see https://docs.ansible.com/ansible/latest/galaxy/user_guide.html#installing-multiple-roles-from-a-file
+# from GitHub
+- name: qs5779.nfs
+  src: https://github.com/qs5779/ansible-role-nfs
+  version: develop
+...
+```
+
+Then run:
+
+```sh
+ansible-galaxy install -r requirements.yml
+```
 
 Author Information
 ------------------
