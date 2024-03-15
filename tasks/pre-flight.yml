@@ -1,0 +1,19 @@
+---
+- name: Assert | os family is supported
+  ansible.builtin.assert:
+    that: ansible_os_family is in ['Archlinux', 'Debian', 'RedHat']
+    fail_msg: "Unsupported os family: {{ ansible_os_family }}!!!"
+
+- name: Assert | Test nfs_v4_access_list
+  ansible.builtin.assert:
+    that:
+      - nfs_v4_access_list is defined
+      - nfs_v4_access_list is not mapping
+      - nfs_v4_access_list is iterable
+      - nfs_v4_access_list is not string
+      - nfs_v4_access_list  # is not empty
+    fail_msg: "nfs_v4_access_list variable must be a non-empty list type!!!"
+  when:
+    - nfs_server
+    - nfs_v4_server_only
+...

@@ -1,31 +1,23 @@
 ---
-- name: Set need statd
-  ansible.builtin.lineinfile:
-    path: /etc/default/nfs-common
-    regexp: '^NEED_STATD'
-    line: 'NEED_STATD="no"'
-  notify: Restart nfs-server
 
-- name: Set need idmapd
-  ansible.builtin.lineinfile:
-    path: /etc/default/nfs-common
-    regexp: '^NEED_IDMAPD'
-    line: 'NEED_IDMAPD="yes"'
-  notify: Restart nfs-server
+- name: Set nfs v4 client options for debian
+  when:
+    - ansible_os_family == "Debian"
+    - nfs_v4_server_only
+  block:
+    - name: Set nfsv4 server default
+      ansible.builtin.lineinfile:
+        path: /etc/default/nfs-kernel-server
+        regexp: 'RPCNFSDOPTS'
+        line: 'RPCNFSDOPTS="-N 2 -N 3"'
+      notify: Restart nfs-server
 
-- name: Set nfsv4 server default
-  ansible.builtin.lineinfile:
-    path: /etc/default/nfs-kernel-server
-    regexp: 'RPCNFSDOPTS'
-    line: 'RPCNFSDOPTS="-N 2 -N 3"'
-  notify: Restart nfs-server
-
-- name: Set nfsv4 default
-  ansible.builtin.lineinfile:
-    path: /etc/default/nfs-kernel-server
-    regexp: '^RPCMOUNTDOPTS'
-    line: 'RPCMOUNTDOPTS="--manage-gids -N 2 -N 3"'
-  notify: Restart nfs-server
+    - name: Set nfsv4 default
+      ansible.builtin.lineinfile:
+        path: /etc/default/nfs-kernel-server
+        regexp: '^RPCMOUNTDOPTS'
+        line: 'RPCMOUNTDOPTS="--manage-gids -N 2 -N 3"'
+      notify: Restart nfs-server
 
 - name: Ensure export root directory
   ansible.builtin.file:

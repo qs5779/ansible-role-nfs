@@ -3,11 +3,12 @@
 nfs_nobody_group: nobody
 nfs_manage_ntp: true  # https://linuxgenie.net/set-up-configure-nfs-client-server-arch-linux/
 nfs_server: true
+nfs_v4_server_only: true
+nfs_v4_client_only: false
 nfs_client_packages:
   - nfs-utils
 nfs_server_packages:
   - nfs-utils
-nfs_v4_only: true
 nfs_v4_export_root: /exports
 nfs_v4_export_opts:
   - rw

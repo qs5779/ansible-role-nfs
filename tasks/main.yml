@@ -1,18 +1,9 @@
 ---
-- name: Assert | os family is supported
-  ansible.builtin.assert:
-    that: ansible_os_family is in ['Archlinux', 'Debian', 'RedHat']
-    fail_msg: "Unsupported os family: {{ ansible_os_family }}!!!"
-
-- name: Assert | Test nfs_access_list
-  ansible.builtin.assert:
-    that:
-      - nfs_access_list is defined
-      - nfs_access_list is not mapping
-      - nfs_access_list is iterable
-      - nfs_access_list is not string
-    fail_msg: "nfs_access_list variable must be a list type!!!"
-  when: nfs_server
+- name: Import pre-flight.yml
+  ansible.builtin.import_tasks:
+    file: pre-flight.yml
+  run_once: true
+  delegate_to: localhost
 
 - name: Include ntp service tasks
   ansible.builtin.include_tasks: tasks/ntp-service.yml
@@ -21,11 +12,7 @@
 - name: Include the os family variables
   ansible.builtin.include_vars: "vars/{{ ansible_os_family }}.yml"
 
-- name: Include ntp service tasks
-  ansible.builtin.include_tasks: tasks/ntp-service.yml
-  when: not nfs_server
-
-- name: Include ntp service tasks
+- name: Include nfs server tasks
   ansible.builtin.include_tasks: tasks/nfs-server.yml
-  when: not nfs_server
+  when: nfs_server
 ...

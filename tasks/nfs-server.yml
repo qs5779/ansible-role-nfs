@@ -15,7 +15,7 @@
 
 - name: Include nfs4 server tasks
   ansible.builtin.include_tasks: tasks/nfs4-server.yml
-  when: nfs_v4_only
+  when: nfs_v4_server_only
 
 # - name: Ensure export config file
 #   ansible.builtin.template:
