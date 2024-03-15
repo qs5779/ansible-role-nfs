@@ -1,3 +1,15 @@
 {
-    "ansible.python.interpreterPath": "/bin/python"
+    "ansible.python.interpreterPath": "/bin/python",
+    "cSpell.words": [
+        "crossmnt",
+        "fsid",
+        "gids",
+        "IDMAPD",
+        "nfsv",
+        "nogroup",
+        "RPCMOUNTDOPTS",
+        "RPCNFSDOPTS",
+        "statd",
+        "timedatectl"
+    ]
 }

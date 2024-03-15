@@ -1,0 +1,32 @@
+---
+- name: Stat mount point source
+  ansible.builtin.stat:
+    path: "{{ item.src }}"
+  register: mountpointsrc
+
+- name: Show stat
+  var: mountpointsrc
+
+- name: Ensure bind source
+  ansible.builtin.file:
+    state: directory
+    path: "{{ item.src }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('users') }}"
+    mode: "{{ item.mode | default('0755') }}"
+  when: not mountpointsrc.stat.exists
+
+- name: Create mount point
+  ansible.builtin.file:
+    state: directory
+    owner: "{{ item.owner | default('nobody') }}"
+    group: "{{ item.group | default('nogroup') }}"
+    mode: "{{ item.mode | default('0775') }}"
+
+- name: Bind mount
+  ansible.posix.mount:
+    path: "{{ nfs4_export_root }}/{{ item.name }}"
+    src: "{{ item.src }}"
+    opts: "{{ nfs_v4_bind_mount_options | join(',') }}"
+    state: mounted
+...

@@ -1,0 +1,17 @@
+---
+- name: Get status of timedatectl ntp service
+  ansible.builtin.shell:
+    executable: /bin/bash
+    cmd: "set -o pipefail timedatectl | grep 'NTP service' | awk '{ print $NF }'"
+  register: timedatectl_res
+  changed_when: false
+  failed_when: timedatectl_res.rc != 0
+
+- name: Ensure timedatectl ntp is active
+  ansible.builtin.command:
+    cmd: "timedatectl set-ntp true"
+  when: '"inactive" in timedatectl_res.stdout'
+  register: timedatectl1_res
+  changed_when: timedatectl1_res.rc != 0
+  failed_when: timedatectl1_res.rc != 0
+...

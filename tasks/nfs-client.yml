@@ -1,0 +1,6 @@
+---
+- name: Ensure client packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+  loop: "{{ nfs_client_packages }}.yml"
+...

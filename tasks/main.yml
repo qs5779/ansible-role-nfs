@@ -1,81 +1,31 @@
 ---
-# tasks file for ansible-role-nfs
-# ref: https://www.howtoforge.com/tutorial/install-nfs-server-and-client-on-debian/
-- name: Install nfs client
-  ansible.builtin.package:
-    name: nfs-common
-  when: is_nfs_client
+- name: Assert | os family is supported
+  ansible.builtin.assert:
+    that: ansible_os_family is in ['Archlinux', 'Debian', 'RedHat']
+    fail_msg: "Unsupported os family: {{ ansible_os_family }}!!!"
 
-- name: Install nfs server
-  when: is_nfs_server
-  block:
-    - name: Assert | Test nfs_access_list
-      ansible.builtin.assert:
-        that:
-          - nfs_access_list is defined
-          - nfs_access_list is not mapping
-          - nfs_access_list is iterable
-          - nfs_access_list is not string
-        quiet: true
+- name: Assert | Test nfs_access_list
+  ansible.builtin.assert:
+    that:
+      - nfs_access_list is defined
+      - nfs_access_list is not mapping
+      - nfs_access_list is iterable
+      - nfs_access_list is not string
+    fail_msg: "nfs_access_list variable must be a list type!!!"
+  when: nfs_server
 
-    - name: Install nfs server kernel
-      ansible.builtin.package:
-        name: nfs-kernel-server
+- name: Include ntp service tasks
+  ansible.builtin.include_tasks: tasks/ntp-service.yml
+  when: nfs_manage_ntp
 
-    - name: Enable service nfs-server, and not touch the state
-      ansible.builtin.service:
-        name: nfs-server
-        enabled: true
-      when:
-        - not ansible_check_mode
+- name: Include the os family variables
+  ansible.builtin.include_vars: "vars/{{ ansible_os_family }}.yml"
 
-    - name: Set need statd
-      ansible.builtin.lineinfile:
-        path: /etc/default/nfs-common
-        regexp: '^NEED_STATD'
-        line: 'NEED_STATD="no"'
-      when: is_nfsv4_only
-      notify: Restart nfs-server
+- name: Include ntp service tasks
+  ansible.builtin.include_tasks: tasks/ntp-service.yml
+  when: not nfs_server
 
-    - name: Set need idmapd
-      ansible.builtin.lineinfile:
-        path: /etc/default/nfs-common
-        regexp: '^NEED_IDMAPD'
-        line: 'NEED_IDMAPD="yes"'
-      when: is_nfsv4_only
-      notify: Restart nfs-server
-
-    - name: Set nfsv4 server default
-      ansible.builtin.lineinfile:
-        path: /etc/default/nfs-kernel-server
-        regexp: 'RPCNFSDOPTS'
-        line: 'RPCNFSDOPTS="-N 2 -N 3"'
-      when: is_nfsv4_only
-      notify: Restart nfs-server
-
-    - name: Set nfsv4 default
-      ansible.builtin.lineinfile:
-        path: /etc/default/nfs-kernel-server
-        regexp: '^RPCMOUNTDOPTS'
-        line: 'RPCMOUNTDOPTS="--manage-gids -N 2 -N 3"'
-      when: is_nfsv4_only
-      notify: Restart nfs-server
-
-    - name: Ensure export directories
-      ansible.builtin.file:
-        state: directory
-        path: "{{ nfs_export_root }}/{{ item }}"
-        owner: nobody
-        group: nogroup
-        mode: "0755"
-      loop: "{{ nfs_exports }}"
-
-    - name: Ensure export config file
-      ansible.builtin.template:
-        src: templates/exports.j2
-        dest: /etc/exports
-        owner: root
-        group: root
-        mode: "0644"
-      notify: Reload exports
+- name: Include ntp service tasks
+  ansible.builtin.include_tasks: tasks/nfs-server.yml
+  when: not nfs_server
 ...

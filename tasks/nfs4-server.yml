@@ -1,0 +1,45 @@
+---
+- name: Set need statd
+  ansible.builtin.lineinfile:
+    path: /etc/default/nfs-common
+    regexp: '^NEED_STATD'
+    line: 'NEED_STATD="no"'
+  notify: Restart nfs-server
+
+- name: Set need idmapd
+  ansible.builtin.lineinfile:
+    path: /etc/default/nfs-common
+    regexp: '^NEED_IDMAPD'
+    line: 'NEED_IDMAPD="yes"'
+  notify: Restart nfs-server
+
+- name: Set nfsv4 server default
+  ansible.builtin.lineinfile:
+    path: /etc/default/nfs-kernel-server
+    regexp: 'RPCNFSDOPTS'
+    line: 'RPCNFSDOPTS="-N 2 -N 3"'
+  notify: Restart nfs-server
+
+- name: Set nfsv4 default
+  ansible.builtin.lineinfile:
+    path: /etc/default/nfs-kernel-server
+    regexp: '^RPCMOUNTDOPTS'
+    line: 'RPCMOUNTDOPTS="--manage-gids -N 2 -N 3"'
+  notify: Restart nfs-server
+
+- name: Ensure export root directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ nfs_export_root }}"
+    owner: nobody
+    group: nogroup
+    mode: "0755"
+
+- name: Include bind mounts tasks
+  ansible.builtin.include_tasks: tasks/bind-mounts.yml
+  loop: "{{ nfs_v4_bind_mounts }}"
+
+- name: Include bind mounts remove tasks
+  ansible.builtin.include_tasks: tasks/remove-mounts.yml
+  loop: "{{ nfs_v4_bind_mounts_remove }}"
+...

@@ -1,15 +1,21 @@
 ---
 # defaults file for ansible-role-nfs
-is_nfs_client: true
-is_nfs_server: true
-is_nfsv4_only: true
-nfs_export_root: /exports
-nfs_exports:
-  - data
-  - documents
-nfs_export_opts:
+nfs_nobody_group: nobody
+nfs_manage_ntp: true  # https://linuxgenie.net/set-up-configure-nfs-client-server-arch-linux/
+nfs_server: true
+nfs_client_packages:
+  - nfs-utils
+nfs_server_packages:
+  - nfs-utils
+nfs_v4_only: true
+nfs_v4_export_root: /exports
+nfs_v4_export_opts:
   - rw
   - no_root_squash
   - no_subtree_check
   - crossmnt
   - fsid=0
+nfs_v4_bind_mount_options:
+  - bind
+nfs_v4_bind_mounts: []
+nfs_v4_bind_mounts_remove: []
